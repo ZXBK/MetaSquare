@@ -1,0 +1,66 @@
+#!/bin/bash
+##Goal: automatically building new taxonomy, fasta file kraken2 database
+##Kao Chih Hsin, Sep/2022
+##email: kaochihhsin@gmail.com
+
+usage()
+{
+        echo "Usage: `basename $0` -h help -f .fna -x taxo.txt [-t threads]"
+        echo "          -f: 16S fasta sequence (should be .fna )"
+        echo "          -x: taxonomy.txt"
+        echo "          -t: number of threads (default=20) "
+        exit 0
+}
+
+### get options
+while getopts 'f:x:t:h' OPT; do
+        case $OPT in
+                f)
+                        file="$OPTARG";;
+                x)
+                        txt="$OPTARG";;
+                t)
+                        threads="$OPTARG";;
+                h)
+                        usage;;
+                ?)
+                        usage;;
+        esac
+done
+
+### check required variants
+if [ -z $file ] || [ -z $txt ] ; then
+        usage
+fi
+### set default values while optional variants were not set
+if [ -z $threads ]; then
+        threads=20
+fi
+
+echo Input fasta: $file
+echo Input taxonomy: $txt
+echo Threads: $threads
+echo Start Time: $(date '+%d %B %T')
+echo 
+echo making path: Kraken2_db
+echo 
+mkdir ./Kraken2_db &&  mkdir Kraken2_db/KRAKEN2_New_DB && mkdir Kraken2_db/KRAKEN2_New_DB/data &&\
+ mkdir Kraken2_db/KRAKEN2_New_DB/library && mkdir Kraken2_db/KRAKEN2_New_DB/taxonomy 
+ln $txt ./Kraken2_db/KRAKEN2_New_DB/taxonomy/taxo.txt
+ln $file ./Kraken2_db/KRAKEN2_New_DB/library/16S.fna
+ln build_gg_taxonomy.pl ./Kraken2_db/KRAKEN2_New_DB/
+
+cd ./Kraken2_db/KRAKEN2_New_DB/taxonomy
+nohup ../build_gg_taxonomy.pl ./taxo.txt &
+pids="$!"
+echo processing PID: $pids
+echo
+echo $(date '+%d %B %T') ...... Processing
+wait $pids
+mv seqid2taxid.map ../
+cd ../../
+echo $PWD 
+nohup docker run --name kraken2 --rm -v $PWD:/in -w /in staphb/kraken2:2.1.2-no-db \
+kraken2-build --db KRAKEN2_New_DB --build --threads $threads &
+
+echo $(date '+%d %B %T') ...... Finish! :D
