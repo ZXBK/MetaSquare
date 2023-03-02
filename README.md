@@ -89,3 +89,17 @@ First Version: v1.0, 2, June, 2021
 2.Wood, D.E., Lu, J. & Langmead, B. Improved metagenomic analysis with Kraken 2. Genome Biol 20, 257 (2019). [https://doi.org/10.1186/s13059-019-1891-0](https://doi.org/10.1186/s13059-019-1891-0)
 
 3.Bolyen E, et. al 2019. Reproducible, interactive, scalable and extensible microbiome data science using QIIME 2. Nature Biotechnology 37: 852–857. [https://doi.org/10.1038/s41587-019-0209-9](https://doi.org/10.1038/s41587-019-0209-9)
+
+---
+## Add new sequences
+
+### Goal: Filtering out homopolymer and ambiguous_bases
+
+```
+pip install scikit-bio
+pip install scipy==1.8.1
+#python version: 3.8.14
+python3.8 main.py -i read.fa -o1 o1 -o2 o2
+```
+- scipy requirement error :
+https://github.com/biocore/scikit-bio/issues/1818
